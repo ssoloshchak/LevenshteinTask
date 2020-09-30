@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Levenshtein.WebApi.Services;
 
 namespace Levenshtein.WebApi.Infrastructure
@@ -33,42 +35,20 @@ namespace Levenshtein.WebApi.Infrastructure
 
             matrixD[0, 0] = 0;
 
-            traceMatrix[0, 0] = new Trace
-            {
-                Operation = Operation.None,
-                From = firstWord,
-                To = firstWord,
-                Previous = null,
-                TotalCost = 0,
-                CurrentCost = 0
-            };
+            traceMatrix[0, 0] = new Trace(firstWord, Operation.None);
 
             for (var i = 1; i < n; i++)
             {
                 matrixD[i, 0] = i;
-                traceMatrix[i, 0] = new Trace
-                {
-                    TotalCost = i,
-                    CurrentCost = 1,
-                    Operation = Operation.Delete,
-                    Previous = traceMatrix[i - 1, 0],
-                    From = traceMatrix[i - 1, 0].To,
-                    To = traceMatrix[i - 1, 0].To.Remove(0, 1)
-                };
+                traceMatrix[i, 0] = new Trace(traceMatrix[i - 1, 0], Operation.Delete, 1, i);
+                traceMatrix[i, 0].To.Remove(0, 1);
             }
 
             for (var j = 1; j < m; j++)
             {
                 matrixD[0, j] = j;
-                traceMatrix[0, j] = new Trace
-                {
-                    TotalCost = j,
-                    CurrentCost = 1,
-                    Operation = Operation.Insert,
-                    Previous = traceMatrix[0, j - 1],
-                    From = traceMatrix[0, j - 1].To,
-                    To = traceMatrix[0, j - 1].To.Insert(0, secondWord[j - 1].ToString())
-                };
+                traceMatrix[0, j] = new Trace(traceMatrix[0, j - 1], Operation.Insert, 1, j);
+                traceMatrix[0, j].To.Insert(0, secondWord[j - 1]);
             }
 
             for (var i = 1; i < n; i++)
@@ -86,45 +66,24 @@ namespace Levenshtein.WebApi.Infrastructure
                     {
                         matrixD[i, j] = deletionTotalCost;
                         var previous = traceMatrix[i - 1, j];
-                        traceMatrix[i, j] = new Trace
-                        {
-                            CurrentCost = deletionCost,
-                            TotalCost = deletionTotalCost,
-                            Previous = previous,
-                            Operation = Operation.Delete,
-                            From = previous.To,
-                            To = previous.To.Remove(j, 1)
-                        };
+                        traceMatrix[i, j] = new Trace(previous, Operation.Delete, deletionCost, deletionTotalCost);
+                        traceMatrix[i, j].To.Remove(j, 1);
                     }
                     else if (insertionTotalCost <= deletionTotalCost && insertionTotalCost <= substitutionTotalCost)
                     {
                         matrixD[i, j] = insertionTotalCost;
                         var previous = traceMatrix[i, j - 1];
-                        traceMatrix[i, j] = new Trace
-                        {
-                            CurrentCost = insertionCost,
-                            TotalCost = insertionTotalCost,
-                            Previous = previous,
-                            Operation = Operation.Insert,
-                            From = previous.To,
-                            To = previous.To.Insert(i, secondWord[j - 1].ToString())
-                        };
+                        traceMatrix[i, j] = new Trace(previous, Operation.Insert, insertionCost, insertionTotalCost);
+                        traceMatrix[i, j].To.Insert(i, secondWord[j - 1]);
                     }
                     else
                     {
                         matrixD[i, j] = substitutionTotalCost;
                         var previous = traceMatrix[i - 1, j - 1];
-                        traceMatrix[i, j] = new Trace
-                        {
-                            CurrentCost = substitutionCost,
-                            TotalCost = substitutionTotalCost,
-                            Previous = previous,
-                            Operation = Operation.Update,
-                            From = previous.To,
-                            To = substitutionCost == 0 ? previous.To 
-                                : previous.To.Insert(j - 1, secondWord[j - 1].ToString()).Remove(j, 1)
+                        traceMatrix[i, j] = new Trace(previous, Operation.Update, substitutionCost, substitutionTotalCost);
 
-                        };
+                        if (substitutionCost > 0)
+                            traceMatrix[i, j].To.Insert(j - 1, secondWord[j - 1]).Remove(j, 1);
                     }
                 }
             }
@@ -153,10 +112,28 @@ namespace Levenshtein.WebApi.Infrastructure
         {
             public int CurrentCost { get; set; }
             public int TotalCost { get; set; }
-            public Trace Previous { get; set; }
-            public Operation Operation { get; set; }
+            public Trace Previous { get; }
+            public Operation Operation { get; }
             public string From { get; set; }
-            public string To { get; set; }
+            public StringBuilder To { get; }
+
+            public Trace(Trace previous, Operation operation, int currentCost, int totalCost)
+            {
+                Debug.Assert(previous != null);
+                Operation = operation;
+                Previous = previous;
+                From = previous.To.ToString();
+                To = new StringBuilder(From);
+                CurrentCost = currentCost;
+                TotalCost = totalCost;
+            }
+
+            public Trace(string from, Operation operation)
+            {
+                Operation = operation;
+                From = from;
+                To = new StringBuilder(From);
+            }
 
             public override string ToString()
             {

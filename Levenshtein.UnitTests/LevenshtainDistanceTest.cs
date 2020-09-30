@@ -9,9 +9,10 @@ namespace Levenshtein.UnitTests
         private readonly ILevenshteinDistanceCalculator _calculator = new LevenshteinDistanceCalculator();
 
         [Theory]
-        //   [InlineData("cat", "flat", 2)]
+       // [InlineData("cat", "flat", 2)]
+        [InlineData("abcd", "efgh", 2)]
         //[InlineData("flat", "cat", 2)]
-        [InlineData("sik", "sok", 1)]
+        //[InlineData("sik", "sok", 1)]
         //[InlineData("*ike", "trike", 0)]
         //[InlineData("*ike", "bbike ", 0)]
         //[InlineData("bike", "*ike", 0)]
