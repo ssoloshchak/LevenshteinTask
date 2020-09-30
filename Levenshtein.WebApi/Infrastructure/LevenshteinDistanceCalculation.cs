@@ -1,17 +1,31 @@
-﻿using System.Threading;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Levenshtein.WebApi.Services;
 
 namespace Levenshtein.WebApi.Infrastructure
 {
-    public class LevenshteinDistanceCalculation: ILevenshteinDistanceCalculation
+    public class LevenshteinDistanceCalculation : ILevenshteinDistanceCalculation
     {
         public int Calculate(string firstWord, string secondWord) => CalculateInternal(firstWord, secondWord);
-        
-        public async Task<int> CalculateAsync(string firstWord, string secondWord, 
+
+        public async Task<int> CalculateAsync(string firstWord, string secondWord,
             CancellationToken cancellationToken) => await Task.Factory.StartNew(() => CalculateInternal(firstWord, secondWord), cancellationToken);
 
         internal int CalculateInternal(string firstWord, string secondWord)
+        {
+            return ContainsWildCard(firstWord) || ContainsWildCard(secondWord)
+                ? WildCardSupportImplementation(firstWord, secondWord)
+                : ClassicalImplementation(firstWord, secondWord);
+        }
+
+        private int WildCardSupportImplementation(string firstWord, string secondWord)
+        {
+            throw new NotImplementedException();
+        }
+
+        private int ClassicalImplementation(string firstWord, string secondWord)
         {
             var n = firstWord.Length + 1;
             var m = secondWord.Length + 1;
@@ -35,9 +49,9 @@ namespace Levenshtein.WebApi.Infrastructure
                 for (var j = 1; j < m; j++)
                 {
                     var substitutionCost = firstWord[i - 1] == secondWord[j - 1] ? 0 : 1;
-
-                    matrixD[i, j] = Minimum(matrixD[i - 1, j] + deletionCost,      
-                        matrixD[i, j - 1] + insertionCost,         
+                    
+                    matrixD[i, j] = Minimum(matrixD[i - 1, j] + deletionCost,
+                        matrixD[i, j - 1] + insertionCost,
                         matrixD[i - 1, j - 1] + substitutionCost);
                 }
             }
@@ -45,6 +59,7 @@ namespace Levenshtein.WebApi.Infrastructure
             return matrixD[n - 1, m - 1];
         }
 
+        private bool ContainsWildCard(string value) => value.Any(t => t == '*' || t == '+');
         private int Minimum(int a, int b, int c) => (a = a < b ? a : b) < c ? a : c;
     }
 
