@@ -45,29 +45,32 @@ namespace Levenshtein.WebApi.Infrastructure
             var fullTrace = TraceResult.Reverse().ToList();
             return new StringBuilder(fullTrace.First().From)
                 .Append("->")
-                .AppendJoin("->", fullTrace.Where(item => item.CurrentCost != 0).Select(item => item.To))
+                .AppendJoin("->", fullTrace.Where(item => item.Operation != Operation.None).Select(item => item.To))
                 .ToString();
         }
 
-        public void Delete(int i, int j, int deletionTotalCost)
+        public void Delete(int i, int j, int deletionCost, int deletionTotalCost)
         {
             var previous = Traces[i - 1, j];
-            Traces[i, j] = new Trace(previous, Operation.Delete, 1, deletionTotalCost);
-            Traces[i, j].To.Remove(j, 1);
+            Traces[i, j] = new Trace(previous, Operation.Delete, deletionCost, deletionTotalCost);
+            if (deletionCost != 0)
+                Traces[i, j].To.Remove(j, 1);
         }
 
-        public void Insert(int i, int j, int insertionTotalCost)
+        public void Insert(int i, int j, int insertionCost, int insertionTotalCost)
         {
             var previous = Traces[i, j - 1];
-            Traces[i, j] = new Trace(previous, Operation.Insert, 1, insertionTotalCost);
-            Traces[i, j].To.Insert(i, SecondWord[j - 1]);
+            Traces[i, j] = new Trace(previous, Operation.Insert, insertionCost, insertionTotalCost);
+            if (insertionCost != 0 || SecondWord[j - 1] == '*' || SecondWord[j - 1] == '+')
+                Traces[i, j].To.Insert(i, SecondWord[j - 1]);
         }
 
-        public void Substitute(int i, int j, int substitutionTotalCost)
+        public void Substitute(int i, int j, int substitutionCost, int substitutionTotalCost)
         {
             var previous = Traces[i - 1, j - 1];
-            Traces[i, j] = new Trace(previous, Operation.Substitute, 1, substitutionTotalCost);
-            Traces[i, j].To.Insert(j - 1, SecondWord[j - 1]).Remove(j, 1);
+            Traces[i, j] = new Trace(previous, Operation.Substitute, substitutionCost, substitutionTotalCost);
+            if (substitutionCost != 0 || SecondWord[j - 1] == '*' || SecondWord[j - 1] == '+')
+                Traces[i, j].To.Insert(j - 1, SecondWord[j - 1]).Remove(j, 1);
         }
 
         public void Duplicate(int i, int j, int substitutionTotalCost)

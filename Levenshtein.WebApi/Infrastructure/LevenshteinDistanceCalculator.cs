@@ -9,23 +9,8 @@ namespace Levenshtein.WebApi.Infrastructure
     {
         public LevenshteinDistanceDto Calculate(string firstWord, string secondWord)
         {
-            return ContainsWildCard(firstWord) || ContainsWildCard(secondWord)
-                ? WildCardSupportImplementation(firstWord, secondWord)
-                : ClassicalImplementation(firstWord, secondWord);
-        }
-
-        private LevenshteinDistanceDto WildCardSupportImplementation(string firstWord, string secondWord)
-        {
-            throw new NotImplementedException();
-        }
-
-        private LevenshteinDistanceDto ClassicalImplementation(string firstWord, string secondWord)
-        {
             var n = firstWord.Length + 1;
             var m = secondWord.Length + 1;
-
-            const int deletionCost = 1;
-            const int insertionCost = 1;
 
             var tracer = new LevenshteinDistanceTracer(firstWord, secondWord);
 
@@ -33,28 +18,45 @@ namespace Levenshtein.WebApi.Infrastructure
             {
                 for (var j = 1; j < m; j++)
                 {
-                    var substitutionCost = firstWord[i - 1] == secondWord[j - 1] ? 0 : 1;
-
+                    var substitutionCost = firstWord[i - 1] == secondWord[j - 1] 
+                                           || firstWord[i - 1] == '*' 
+                                           || firstWord[i - 1] == '+' 
+                                           || secondWord[j - 1] == '*' 
+                                           || secondWord[j - 1] == '+' 
+                        ? 0 : 1;
+                    var deletionCost = firstWord[i - 1] == '*' 
+                                       || secondWord[j - 1] == '*' 
+                        ? 0 : 1;
+                    var insertionCost = firstWord[i - 1] == '*' 
+                                        || firstWord[i - 1] == '+'
+                                        || (i>1 && (firstWord[i - 2] == '*' || firstWord[i - 2] == '+'))
+                                        || (i < firstWord.Length && (firstWord[i] == '*' || firstWord[i] == '+'))
+                                        || secondWord[j - 1] == '*' 
+                                        || secondWord[j - 1] == '+'
+                                        || (j > 1 && (secondWord[j - 2] == '*' || secondWord[j - 2] == '+'))
+                                        || (j < secondWord.Length && (secondWord[j] == '*' || secondWord[j] == '+'))
+                        ? 0
+                        : 1;
                     //solving the elementary task: by deciding which way to take
                     var deletionTotalCost = tracer.Traces[i - 1, j].TotalCost + deletionCost;
                     var insertionTotalCost = tracer.Traces[i, j - 1].TotalCost + insertionCost;
                     var substitutionTotalCost = tracer.Traces[i - 1, j - 1].TotalCost + substitutionCost;
 
-                    if (deletionTotalCost <= insertionTotalCost && deletionTotalCost <= substitutionTotalCost)
+                    if (insertionTotalCost <= deletionTotalCost && insertionTotalCost <= substitutionTotalCost)
                     {
-                        tracer.Delete(i, j, deletionTotalCost);
+                        tracer.Insert(i, j, insertionCost, insertionTotalCost);
                     }
-                    else if (insertionTotalCost <= deletionTotalCost && insertionTotalCost <= substitutionTotalCost)
+                    else if (deletionTotalCost <= insertionTotalCost && deletionTotalCost <= substitutionTotalCost)
                     {
-                        tracer.Insert(i, j, insertionTotalCost);
+                        tracer.Delete(i, j, deletionCost, deletionTotalCost);
                     }
-                    else if (substitutionCost == 1)
+                    else if (firstWord[i - 1] == secondWord[j - 1])
                     {
-                        tracer.Substitute(i, j, substitutionTotalCost);
+                        tracer.Duplicate(i, j, substitutionTotalCost);
                     }
                     else
                     {
-                        tracer.Duplicate(i, j, substitutionTotalCost);
+                        tracer.Substitute(i, j, substitutionCost, substitutionTotalCost);
                     }
                 }
             }
@@ -66,7 +68,5 @@ namespace Levenshtein.WebApi.Infrastructure
             };
         }
 
-
-        private bool ContainsWildCard(string value) => value.Any(t => t == '*' || t == '+');
     }
 }
