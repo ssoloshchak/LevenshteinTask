@@ -14,18 +14,13 @@ namespace Levenshtein.UnitTests
         [InlineData("flat", "cat", 2, "flat->clat->cat")]
         [InlineData("sik", "sok", 1, "sik->sok")]
         [InlineData("sik", "sk", 1, "sik->sk")]
-        [InlineData("sik", "", 3, "sik->sk")]
-        //[InlineData("*ike", "trike", 0)]
-        //[InlineData("*ike", "bbike ", 0)]
-        //[InlineData("bike", "*ike", 0)]
-        //[InlineData("bike", "*bike", 0)]
-        //[InlineData("+ike", "bike", 0)]
-        //[InlineData("bike", "+bike", 1)]
+        [InlineData("sik", "", 3, "sik->ik->k->")]
         public void DistanceShouldBeEqual(string firstWord, string secondWord, int expectedDistance, string expectedTrace)
         {
             var result = _calculator.Calculate(firstWord, secondWord);
+            Assert.NotNull(result.Trace);
+            Assert.Equal(expectedTrace, result.Trace);
             Assert.Equal(expectedDistance, result.Distance);
-            Assert.True(string.Equals(expectedTrace, result.Trace));
         }
     }
 }

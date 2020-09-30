@@ -9,18 +9,6 @@ namespace Levenshtein.WebApi.Infrastructure
     {
         public LevenshteinDistanceDto Calculate(string firstWord, string secondWord)
         {
-            return ContainsWildCard(firstWord) || ContainsWildCard(secondWord)
-                ? WildCardSupportImplementation(firstWord, secondWord)
-                : ClassicalImplementation(firstWord, secondWord);
-        }
-
-        private LevenshteinDistanceDto WildCardSupportImplementation(string firstWord, string secondWord)
-        {
-            throw new NotImplementedException();
-        }
-
-        private LevenshteinDistanceDto ClassicalImplementation(string firstWord, string secondWord)
-        {
             var n = firstWord.Length + 1;
             var m = secondWord.Length + 1;
 
@@ -66,7 +54,5 @@ namespace Levenshtein.WebApi.Infrastructure
             };
         }
 
-
-        private bool ContainsWildCard(string value) => value.Any(t => t == '*' || t == '+');
     }
 }
