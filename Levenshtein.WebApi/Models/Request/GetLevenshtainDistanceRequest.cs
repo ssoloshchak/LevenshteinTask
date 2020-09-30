@@ -5,9 +5,9 @@ namespace Levenshtein.WebApi.Models.Request
     public class GetLevenshtainDistanceRequest
     {
         [Required]
-        public string Value1 { get; set; }
+        public string FirstWord { get; set; }
 
         [Required]
-        public string Value2 { get; set; }
+        public string SecondWord { get; set; }
     }
 }

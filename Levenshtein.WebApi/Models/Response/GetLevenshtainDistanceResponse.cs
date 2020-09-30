@@ -1,13 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Levenshtein.WebApi.Models.Request
+﻿namespace Levenshtein.WebApi.Models.Response
 {
     public class GetLevenshtainDistanceResponse
     {
-        [Required]
-        public string Value1 { get; set; }
+        public string FirstWord { get; set; }
 
-        [Required]
-        public string Value2 { get; set; }
+        public string SecondWord { get; set; }
+
+        public int Distance { get; set; }
     }
 }

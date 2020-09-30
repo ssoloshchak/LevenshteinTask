@@ -5,7 +5,7 @@ namespace Levenshtein.WebApi.Services
 {
     public interface ILevenshteinDistanceCalculation
     {
-        int Calculate(string value, string value2);
-        Task<int> CalculateAsync(string value, string value2, CancellationToken token);
+        int Calculate(string firstWord, string secondWord);
+        Task<int> CalculateAsync(string firstWord, string secondWord, CancellationToken token);
     }
 }

@@ -23,7 +23,7 @@ namespace Levenshtein.WebApi.Controllers
         [HttpGet]
         public async Task<ActionResult<int>> Get([FromQuery] GetLevenshtainDistanceRequest request, CancellationToken ct)
         {
-            return await _distanceCalculation.CalculateAsync(request.Value1, request.Value2, ct);
+            return await _distanceCalculation.CalculateAsync(request.FirstWord, request.SecondWord, ct);
         }
     }
 }

@@ -12,7 +12,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "levenshteinDistance?value1=some&value2=domes",
+      "launchUrl": "levenshteinDistance?firstWord=some&secondWord=domes",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -20,7 +20,7 @@
     "Levenshtein.WebApi": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "levenshteinDistance",
+      "launchUrl": "levenshteinDistance?firstWord=some&secondWord=domes",
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
