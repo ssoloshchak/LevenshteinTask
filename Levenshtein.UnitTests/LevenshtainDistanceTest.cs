@@ -9,20 +9,22 @@ namespace Levenshtein.UnitTests
         private readonly ILevenshteinDistanceCalculator _calculator = new LevenshteinDistanceCalculator();
 
         [Theory]
-       // [InlineData("cat", "flat", 2)]
-        [InlineData("abcd", "efgh", 2)]
-        //[InlineData("flat", "cat", 2)]
-        //[InlineData("sik", "sok", 1)]
+        [InlineData("cat", "flat", 2, "cat->fat->flat")]
+        [InlineData("abcd", "efgh", 4, "abcd->ebcd->efcd->efgd->efgh")]
+        [InlineData("flat", "cat", 2, "flat->clat->cat")]
+        [InlineData("sik", "sok", 1, "sik->sok")]
+        [InlineData("sik", "sk", 1, "sik->sk")]
         //[InlineData("*ike", "trike", 0)]
         //[InlineData("*ike", "bbike ", 0)]
         //[InlineData("bike", "*ike", 0)]
         //[InlineData("bike", "*bike", 0)]
         //[InlineData("+ike", "bike", 0)]
         //[InlineData("bike", "+bike", 1)]
-        public void DistanceShouldBeEqual(string firstWord, string secondWord, int expectedDistance)
+        public void DistanceShouldBeEqual(string firstWord, string secondWord, int expectedDistance, string expectedTrace)
         {
-            int calculatedDistance = _calculator.Calculate(firstWord, secondWord);
-            Assert.Equal(expectedDistance, calculatedDistance);
+            var result = _calculator.Calculate(firstWord, secondWord);
+            Assert.Equal(expectedDistance, result.Distance);
+            Assert.True(string.Equals(expectedTrace, result.Trace));
         }
     }
 }

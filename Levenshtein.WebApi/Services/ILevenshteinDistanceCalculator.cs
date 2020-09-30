@@ -1,7 +1,9 @@
-﻿namespace Levenshtein.WebApi.Services
+﻿using Levenshtein.WebApi.Models.Dto;
+
+namespace Levenshtein.WebApi.Services
 {
     public interface ILevenshteinDistanceCalculator
     {
-        int Calculate(string firstWord, string secondWord);
+        LevenshteinDistanceDto Calculate(string firstWord, string secondWord);
     }
 }

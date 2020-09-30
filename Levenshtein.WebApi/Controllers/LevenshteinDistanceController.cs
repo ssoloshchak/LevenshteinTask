@@ -29,7 +29,7 @@ namespace Levenshtein.WebApi.Controllers
                 FirstWord = request.FirstWord,
                 SecondWord = request.SecondWord
             };
-            response.Distance = _distanceCalculator.Calculate(request.FirstWord, request.SecondWord);
+            response.Distance = _distanceCalculator.Calculate(request.FirstWord, request.SecondWord).Distance;
             return Ok(response);
         }
     }

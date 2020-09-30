@@ -3,27 +3,28 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Levenshtein.WebApi.Models.Dto;
 using Levenshtein.WebApi.Services;
 
 namespace Levenshtein.WebApi.Infrastructure
 {
     public class LevenshteinDistanceCalculator : ILevenshteinDistanceCalculator
     {
-        public int Calculate(string firstWord, string secondWord) => CalculateInternal(firstWord, secondWord);
+        public LevenshteinDistanceDto Calculate(string firstWord, string secondWord) => CalculateInternal(firstWord, secondWord);
 
-        internal int CalculateInternal(string firstWord, string secondWord)
+        internal LevenshteinDistanceDto CalculateInternal(string firstWord, string secondWord)
         {
             return ContainsWildCard(firstWord) || ContainsWildCard(secondWord)
                 ? WildCardSupportImplementation(firstWord, secondWord)
                 : ClassicalImplementation(firstWord, secondWord);
         }
 
-        private int WildCardSupportImplementation(string firstWord, string secondWord)
+        private LevenshteinDistanceDto WildCardSupportImplementation(string firstWord, string secondWord)
         {
             throw new NotImplementedException();
         }
 
-        private int ClassicalImplementation(string firstWord, string secondWord)
+        private LevenshteinDistanceDto ClassicalImplementation(string firstWord, string secondWord)
         {
             var n = firstWord.Length + 1;
             var m = secondWord.Length + 1;
@@ -89,25 +90,21 @@ namespace Levenshtein.WebApi.Infrastructure
             }
 
             var lastTrace = traceMatrix[n - 1, m - 1];
-            var changeLog = GetChangeLog(lastTrace);
+        
+            var fullTrace = lastTrace.GetFullTrace().Reverse().ToList();
 
-            return matrixD[n - 1, m - 1];
-        }
-
-        private List<string> GetChangeLog(Trace trace)
-        {
-            var changeLog = new Stack<string>();
-
-            while (trace.Previous != null)
+            return new LevenshteinDistanceDto
             {
-                if (trace.CurrentCost > 0 && trace.Operation != Operation.None)
-                    changeLog.Push(trace.ToString());
-
-                trace = trace.Previous;
-            }
-
-            return changeLog.ToList();
+                Distance = matrixD[n - 1, m - 1],
+                Trace = new StringBuilder(fullTrace.First().From)
+                    .Append("->")
+                    .AppendJoin("->", fullTrace.Where(item => item.CurrentCost != 0).Select(item => item.To))
+                    .ToString()
+            };
+            
         }
+
+    
         public class Trace
         {
             public int CurrentCost { get; set; }
@@ -126,6 +123,20 @@ namespace Levenshtein.WebApi.Infrastructure
                 To = new StringBuilder(From);
                 CurrentCost = currentCost;
                 TotalCost = totalCost;
+            }
+
+            public IList<Trace> GetFullTrace()
+            {
+                var result = new List<Trace>();
+                var trace = this;
+                while (trace.Previous != null)
+                {
+                    result.Add(trace);
+
+                    trace = trace.Previous;
+                }
+
+                return result;
             }
 
             public Trace(string from, Operation operation)
