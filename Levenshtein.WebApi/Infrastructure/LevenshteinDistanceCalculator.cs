@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Levenshtein.WebApi.Services;
 
 namespace Levenshtein.WebApi.Infrastructure
 {
-    public class LevenshteinDistanceCalculation : ILevenshteinDistanceCalculation
+    public class LevenshteinDistanceCalculator : ILevenshteinDistanceCalculator
     {
         public int Calculate(string firstWord, string secondWord) => CalculateInternal(firstWord, secondWord);
-
-        public async Task<int> CalculateAsync(string firstWord, string secondWord,
-            CancellationToken cancellationToken) => await Task.Factory.StartNew(() => CalculateInternal(firstWord, secondWord), cancellationToken);
 
         internal int CalculateInternal(string firstWord, string secondWord)
         {

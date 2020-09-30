@@ -13,23 +13,23 @@ namespace Levenshtein.WebApi.Controllers
     public class LevenshteinDistanceController : ControllerBase
     {
         private readonly ILogger<LevenshteinDistanceController> _logger;
-        private readonly ILevenshteinDistanceCalculation _distanceCalculation;
+        private readonly ILevenshteinDistanceCalculator _distanceCalculator;
 
-        public LevenshteinDistanceController(ILogger<LevenshteinDistanceController> logger, ILevenshteinDistanceCalculation distanceCalculation)
+        public LevenshteinDistanceController(ILogger<LevenshteinDistanceController> logger, ILevenshteinDistanceCalculator distanceCalculator)
         {
             _logger = logger;
-            _distanceCalculation = distanceCalculation;
+            _distanceCalculator = distanceCalculator;
         }
 
         [HttpGet]
-        public async Task<ActionResult<GetLevenshtainDistanceResponse>> Get([FromQuery] GetLevenshtainDistanceRequest request, CancellationToken ct)
+        public ActionResult<GetLevenshtainDistanceResponse> Get([FromQuery] GetLevenshtainDistanceRequest request)
         {
             var response = new GetLevenshtainDistanceResponse()
             {
                 FirstWord = request.FirstWord,
                 SecondWord = request.SecondWord
             };
-            response.Distance = await _distanceCalculation.CalculateAsync(request.FirstWord, request.SecondWord, ct);
+            response.Distance = _distanceCalculator.Calculate(request.FirstWord, request.SecondWord);
             return Ok(response);
         }
     }
