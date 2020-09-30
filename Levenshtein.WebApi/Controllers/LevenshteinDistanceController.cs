@@ -1,6 +1,7 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Levenshtein.WebApi.Models.Request;
+using Levenshtein.WebApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -11,16 +12,18 @@ namespace Levenshtein.WebApi.Controllers
     public class LevenshteinDistanceController : ControllerBase
     {
         private readonly ILogger<LevenshteinDistanceController> _logger;
+        private readonly ILevenshteinDistanceCalculation _distanceCalculation;
 
-        public LevenshteinDistanceController(ILogger<LevenshteinDistanceController> logger)
+        public LevenshteinDistanceController(ILogger<LevenshteinDistanceController> logger, ILevenshteinDistanceCalculation distanceCalculation)
         {
             _logger = logger;
+            _distanceCalculation = distanceCalculation;
         }
 
         [HttpGet]
-        public async Task<ActionResult<int>> Get(CancellationToken ct)
+        public async Task<ActionResult<int>> Get([FromQuery] GetLevenshtainDistanceRequest request, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            return await _distanceCalculation.CalculateAsync(request.Value1, request.Value2, ct);
         }
     }
 }
